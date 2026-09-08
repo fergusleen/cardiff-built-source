@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#08131f" />
+    <meta
+      name="description"
+      content="Watch Cardiff's surviving buildings appear through time, using open building footprints and residential EPC construction-age data."
+    />
+    <title>Cardiff, Built</title>
+    <link rel="stylesheet" href="vendor/maplibre-gl.css" />
+    <link rel="stylesheet" href="app.css" />
+  </head>
+  <body>
+    <main id="app">
+      <div id="map" aria-label="Interactive 3D map of Cardiff buildings by construction period"></div>
+
+      <header class="topbar" aria-label="Map controls">
+        <a class="brand" href="#" aria-label="Reset Cardiff view">
+          <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+          <span>
+            <small>CAERDYDD</small>
+            <strong>CARDIFF <b>BUILT</b></strong>
+          </span>
+        </a>
+
+        <form class="search" id="searchForm" role="search">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m21 21-4.35-4.35m2.35-5.15a7.5 7.5 0 1 1-15 0 7.5 7.5 0 0 1 15 0Z" /></svg>
+          <label class="sr-only" for="searchInput">Search Cardiff</label>
+          <input id="searchInput" autocomplete="off" placeholder="Search an address or place" />
+          <button type="submit">Find</button>
+          <p class="search-status" id="searchStatus" role="status"></p>
+        </form>
+
+        <div class="top-actions">
+          <div class="segmented" aria-label="Colour buildings by">
+            <button class="active" id="ageMode" type="button" aria-pressed="true">Period</button>
+            <button id="heightMode" type="button" aria-pressed="false">Height</button>
+          </div>
+          <button class="icon-button" id="lightButton" type="button" aria-label="Brighten the base map" title="Brighten base map">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4" /><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42" /></svg>
+          </button>
+          <button class="icon-button" id="infoButton" type="button" aria-label="About the data" title="About the data">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 10v7m0-10.1v.1" /></svg>
+          </button>
+        </div>
+      </header>
+
+      <section class="intro-card" id="introCard" aria-labelledby="introTitle">
+        <p class="eyebrow">A city in layers</p>
+        <h1 id="introTitle">Every surviving building<br /><span>in Cardiff</span></h1>
+        <p class="intro-copy">
+          Present-day footprints appear in their recorded construction period. Demolished buildings are absent: this is the Cardiff that survived.
+        </p>
+        <p class="coverage" id="coverageText">Preparing Cardiff’s buildings…</p>
+        <button class="watch-button" id="watchButton" type="button">
+          <span class="play-triangle" aria-hidden="true"></span>
+          Watch the city build
+        </button>
+      </section>
+
+      <div class="map-hint" id="mapHint">drag to pan · right-drag or ⌃-drag to tilt</div>
+
+      <nav class="places" aria-label="Jump to a Cardiff neighbourhood">
+        <button type="button" data-place="centre">Centre</button>
+        <button type="button" data-place="bay">Cardiff Bay</button>
+        <button type="button" data-place="cathays">Cathays</button>
+        <button type="button" data-place="roath">Roath</button>
+        <button type="button" data-place="llanishen">Llanishen</button>
+        <button type="button" data-place="radyr">Radyr</button>
+      </nav>
+
+      <section class="timeline" aria-label="Construction period timeline">
+        <button class="play-button" id="playButton" type="button" aria-label="Play timeline">
+          <span class="play-triangle" aria-hidden="true"></span>
+          <span class="pause-bars" aria-hidden="true"><i></i><i></i></span>
+        </button>
+
+        <div class="timeline-body">
+          <div class="timeline-readout">
+            <div>
+              <span class="readout-prefix">BUILT BY</span>
+              <strong id="periodLabel">BEFORE 1900</strong>
+            </div>
+            <p><span id="buildingCount">0</span> <span>dated buildings visible</span></p>
+          </div>
+          <div class="slider-wrap">
+            <input id="timelineSlider" type="range" min="0" max="12" step="1" value="0" aria-label="Construction period" />
+            <div class="ticks" id="timelineTicks" aria-hidden="true"></div>
+          </div>
+          <div class="legend-row" id="legendRow"></div>
+        </div>
+      </section>
+
+      <section class="building-card" id="buildingCard" aria-live="polite" hidden>
+        <button type="button" id="closeBuilding" aria-label="Close building details">×</button>
+        <p class="eyebrow">Present-day footprint</p>
+        <h2 id="buildingPeriod">Construction period</h2>
+        <dl>
+          <div><dt>Indicative height</dt><dd id="buildingHeight">—</dd></div>
+          <div><dt>Footprint</dt><dd id="buildingArea">—</dd></div>
+          <div><dt>EPC addresses matched</dt><dd id="buildingUnits">—</dd></div>
+          <div><dt>Property form</dt><dd id="buildingType">—</dd></div>
+        </dl>
+      </section>
+
+      <div class="loading" id="loading" role="status">
+        <span></span>
+        <p>Loading Cardiff’s buildings</p>
+      </div>
+
+      <dialog id="aboutDialog">
+        <form method="dialog"><button class="dialog-close" aria-label="Close">×</button></form>
+        <p class="eyebrow">Method & limits</p>
+        <h2>What this map shows</h2>
+        <p>
+          Current building footprints, coloured by the construction-age band attached to residential EPC records. A building appears once its age band is reached; the map does not reconstruct buildings that were later demolished.
+        </p>
+        <dl class="source-list">
+          <div>
+            <dt>Footprints</dt>
+            <dd><a href="https://www.ordnancesurvey.co.uk/products/os-open-map-local" target="_blank" rel="noreferrer">OS OpenMap Local</a>, April 2026.</dd>
+          </div>
+          <div>
+            <dt>Construction period</dt>
+            <dd>Domestic EPC attributes published by <a href="https://mapmaker.geods.ac.uk/" target="_blank" rel="noreferrer">GeoDS/CDRC</a>, 2022 snapshot. Periods are bands, not exact build years.</dd>
+          </div>
+          <div>
+            <dt>Height</dt>
+            <dd><a href="https://datamap.gov.wales/maps/lidar-data-download/" target="_blank" rel="noreferrer">Welsh Government LiDAR</a> DSM minus DTM, sampled within each footprint. Gaps use a property-form estimate.</dd>
+          </div>
+          <div>
+            <dt>Coverage</dt>
+            <dd id="coverageDetail">Residential EPCs do not cover every footprint, particularly non-residential buildings.</dd>
+          </div>
+        </dl>
+        <p class="licence">Contains OS data © Crown copyright and database right 2026. Cardiff boundary via MapIt/ONS. EPC-derived attributes © GeoDS/CDRC. LiDAR © Welsh Government.</p>
+      </dialog>
+    </main>
+
+    <script src="vendor/maplibre-gl.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
