@@ -80,16 +80,20 @@
         <div class="timeline-body">
           <div class="timeline-readout">
             <div>
-              <span class="readout-prefix">BUILT BY</span>
+              <span class="readout-prefix" id="readoutPrefix">BUILT BY</span>
               <strong id="periodLabel">BEFORE 1900</strong>
             </div>
-            <p><span id="buildingCount">0</span> <span>dated buildings visible</span></p>
+            <p><span id="buildingCount">0</span> <span id="buildingCountLabel">dated buildings visible</span></p>
           </div>
           <div class="slider-wrap">
             <input id="timelineSlider" type="range" min="0" max="12" step="1" value="0" aria-label="Construction period" />
             <div class="ticks" id="timelineTicks" aria-hidden="true"></div>
           </div>
           <div class="legend-row" id="legendRow"></div>
+          <div class="all-buildings-control">
+            <label><input id="showAllBuildings" type="checkbox" aria-describedby="undatedKey" /> Show all buildings</label>
+            <span id="undatedKey"><i aria-hidden="true"></i> Grey: age unknown</span>
+          </div>
         </div>
       </section>
 

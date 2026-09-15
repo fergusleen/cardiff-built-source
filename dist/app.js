@@ -22,13 +22,13 @@
   const $ = (selector) => document.querySelector(selector);
   const $$ = (selector) => [...document.querySelectorAll(selector)];
   const formatNumber = new Intl.NumberFormat("en-GB");
-  const state = { metadata: null, map: null, rank: 0, mode: "age", playing: false, timer: null, bright: false, hasAutoPlayed: false };
+  const state = { metadata: null, map: null, rank: 0, mode: "age", playing: false, timer: null, bright: false, showAll: false, hasAutoPlayed: false };
 
   const elements = {
     loading: $("#loading"), introCard: $("#introCard"), coverageText: $("#coverageText"), watchButton: $("#watchButton"),
     playButton: $("#playButton"), slider: $("#timelineSlider"), periodLabel: $("#periodLabel"), buildingCount: $("#buildingCount"),
     ticks: $("#timelineTicks"), legend: $("#legendRow"), ageMode: $("#ageMode"), heightMode: $("#heightMode"),
-    lightButton: $("#lightButton"), infoButton: $("#infoButton"), aboutDialog: $("#aboutDialog"), coverageDetail: $("#coverageDetail"),
+    showAll: $("#showAllBuildings"), countLabel: $("#buildingCountLabel"), readoutPrefix: $("#readoutPrefix"), lightButton: $("#lightButton"), infoButton: $("#infoButton"), aboutDialog: $("#aboutDialog"), coverageDetail: $("#coverageDetail"),
     searchForm: $("#searchForm"), searchInput: $("#searchInput"), searchStatus: $("#searchStatus"), buildingCard: $("#buildingCard")
   };
 
@@ -38,6 +38,8 @@
     const mode = location.hash.match(/[?&]m=(age|height)/);
     if (band) state.rank = Math.max(0, Math.min(12, Number(band[1])));
     if (mode) state.mode = mode[1];
+    state.showAll = /[?&]all=1(?:&|$)/.test(location.hash);
+    if (state.showAll) state.rank = state.metadata.ageLabels.length - 1;
     if (!match) return null;
     return { zoom: Number(match[1]), center: [Number(match[3]), Number(match[2])], bearing: Number(match[4]), pitch: Number(match[5]) };
   }
@@ -45,7 +47,7 @@
   function updateHash() {
     if (!state.map) return;
     const center = state.map.getCenter();
-    const value = `#map=${state.map.getZoom().toFixed(2)}/${center.lat.toFixed(5)}/${center.lng.toFixed(5)}/${state.map.getBearing().toFixed(0)}/${state.map.getPitch().toFixed(0)}&b=${state.rank}&m=${state.mode}`;
+    const value = `#map=${state.map.getZoom().toFixed(2)}/${center.lat.toFixed(5)}/${center.lng.toFixed(5)}/${state.map.getBearing().toFixed(0)}/${state.map.getPitch().toFixed(0)}&b=${state.rank}&m=${state.mode}${state.showAll ? "&all=1" : ""}`;
     history.replaceState(null, "", value);
   }
 
@@ -122,11 +124,16 @@
   }
 
   function setRank(rank, userInitiated = false) {
+    if (userInitiated) state.showAll = false;
     state.rank = Math.max(0, Math.min(state.metadata.ageLabels.length - 1, Number(rank)));
     elements.slider.value = String(state.rank);
     elements.slider.style.setProperty("--progress", `${(state.rank / (state.metadata.ageLabels.length - 1)) * 100}%`);
-    elements.periodLabel.textContent = state.metadata.ageLabels[state.rank].toUpperCase();
-    elements.buildingCount.textContent = formatNumber.format(state.metadata.cumulative[state.rank]);
+    elements.showAll.checked = state.showAll;
+    elements.readoutPrefix.textContent = state.showAll ? "SHOWING" : "BUILT BY";
+    elements.periodLabel.textContent = state.showAll ? "ALL BUILDINGS" : state.metadata.ageLabels[state.rank].toUpperCase();
+    elements.buildingCount.textContent = formatNumber.format(state.showAll ? state.metadata.footprints : state.metadata.cumulative[state.rank]);
+    elements.countLabel.textContent = state.showAll ? "total footprints" : "dated buildings visible";
+    if (state.map.getLayer("undated")) state.map.setPaintProperty("undated", "fill-extrusion-opacity", state.showAll ? 0.9 : (state.bright ? 0.11 : 0.055));
     AGE_COLOURS.forEach((_, index) => {
       if (state.map.getLayer(`age-${index}`)) {
         state.map.setPaintProperty(`age-${index}`, "fill-extrusion-opacity", index <= state.rank ? (state.bright ? 0.98 : 0.9) : 0);
@@ -155,6 +162,7 @@
 
   function play(reset = false) {
     if (state.playing) return pause();
+    state.showAll = false;
     if (reset || state.rank >= state.metadata.ageLabels.length - 1) setRank(0);
     state.playing = true;
     elements.playButton.classList.add("playing");
@@ -237,6 +245,12 @@
   }
 
   function bindEvents() {
+    elements.showAll.addEventListener("change", () => {
+      pause();
+      state.showAll = elements.showAll.checked;
+      elements.introCard.classList.add("dismissed");
+      setRank(state.showAll ? state.metadata.ageLabels.length - 1 : state.rank);
+    });
     elements.slider.addEventListener("input", (event) => setRank(event.target.value, true));
     elements.playButton.addEventListener("click", () => play());
     elements.watchButton.addEventListener("click", () => play(true));
@@ -252,7 +266,6 @@
       state.bright = !state.bright;
       state.map.setPaintProperty("base", "raster-opacity", state.bright ? 0.98 : 0.78);
       state.map.setPaintProperty("base", "raster-brightness-max", state.bright ? 0.72 : 0.48);
-      state.map.setPaintProperty("undated", "fill-extrusion-opacity", state.bright ? 0.11 : 0.055);
       setRank(state.rank);
     });
     $$(".places button").forEach((button) => button.addEventListener("click", () => {
@@ -325,7 +338,7 @@
         });
         state.map.on("moveend", updateHash);
 
-        if (!location.hash.includes("b=") && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        if (!state.showAll && !location.hash.includes("b=") && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
           state.hasAutoPlayed = true;
           window.setTimeout(() => play(true), 1300);
         }

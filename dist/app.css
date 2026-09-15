@@ -149,13 +149,13 @@ a { color: inherit; }
 .watch-button:hover { background: rgba(55, 214, 208, 0.2); }
 .play-triangle { width: 0; height: 0; border-top: 5px solid transparent; border-bottom: 5px solid transparent; border-left: 8px solid currentColor; }
 
-.map-hint { position: absolute; z-index: 4; left: 25px; bottom: 172px; color: rgba(211, 223, 231, 0.55); font-size: 0.7rem; letter-spacing: 0.03em; text-shadow: 0 1px 4px #000; pointer-events: none; }
+.map-hint { position: absolute; z-index: 4; left: 25px; bottom: 210px; color: rgba(211, 223, 231, 0.55); font-size: 0.7rem; letter-spacing: 0.03em; text-shadow: 0 1px 4px #000; pointer-events: none; }
 
 .places {
   position: absolute;
   z-index: 7;
   left: 50%;
-  bottom: 137px;
+  bottom: 175px;
   transform: translateX(-50%);
   display: flex;
   gap: 6px;
@@ -216,6 +216,12 @@ a { color: inherit; }
 .legend-row span { display: flex; align-items: center; gap: 4px; }
 .legend-row i { display: block; width: 8px; height: 3px; border-radius: 4px; }
 
+.all-buildings-control { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 5px 12px; margin-top: 10px; font-size: .7rem; color: #b5c5d1; }
+.all-buildings-control label { display: flex; align-items: center; gap: 6px; min-height: 28px; cursor: pointer; }
+.all-buildings-control input { accent-color: var(--cyan); margin: 0; }
+.all-buildings-control span { display: flex; align-items: center; gap: 5px; }
+.all-buildings-control i { width: 10px; height: 10px; background: #5d7181; border-radius: 2px; }
+
 .building-card { position: absolute; z-index: 12; top: 102px; right: 22px; width: 290px; padding: 20px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); box-shadow: var(--shadow); backdrop-filter: blur(18px); }
 .building-card > button { position: absolute; top: 8px; right: 10px; border: 0; background: transparent; color: #8fa0ad; font-size: 1.45rem; cursor: pointer; }
 .building-card h2 { margin: 0 0 15px; font-size: 1.28rem; }
@@ -275,7 +281,7 @@ button:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid 
   .intro-card { top: 121px; left: 12px; width: calc(100vw - 24px); padding: 20px; }
   .intro-card h1 { font-size: 2rem; }
   .intro-copy { font-size: .85rem; }
-  .places { left: 12px; right: 12px; bottom: 159px; transform: none; overflow-x: auto; justify-content: flex-start; scrollbar-width: none; }
+  .places { left: 12px; right: 12px; bottom: 215px; transform: none; overflow-x: auto; justify-content: flex-start; scrollbar-width: none; }
   .places::-webkit-scrollbar { display: none; }
   .timeline { left: 8px; right: 8px; bottom: max(8px, env(safe-area-inset-bottom)); min-height: 140px; padding: 13px; gap: 11px; align-items: flex-start; }
   .play-button { width: 44px; height: 44px; flex-basis: 44px; margin-top: 1px; }
