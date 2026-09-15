@@ -2,6 +2,14 @@
 
 An interactive 3D timeline of Cardiff's surviving building stock.
 
+Live map: https://fergusleen.github.io/cardiff-built-source/
+
+## Preview and deployment
+
+Run `python3 -m http.server 8000 --directory dist` from the project folder and open http://localhost:8000. Opening `dist/index.html` directly does not allow the browser to fetch the map data.
+
+GitHub Actions publishes the contents of `dist/` to GitHub Pages on each push to `main`. To refresh the data, run `scripts/build_data.py` with its Python dependencies installed, then commit and push the updated `dist/` files. Deployment uses the committed data and does not rerun the data build.
+
 The published map joins:
 
 - OS OpenMap Local building footprints (April 2026)
