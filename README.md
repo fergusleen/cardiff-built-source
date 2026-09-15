@@ -1,4 +1,4 @@
-# The built history of cardiff - http://github.com/fergusleen/cardiff-built-source Sept 2026.
+# The built history of Cardiff, Wales - http://github.com/fergusleen/cardiff-built-source Sept 2026.
 
 An interactive 3D timeline of Cardiff's surviving building stock.
 
